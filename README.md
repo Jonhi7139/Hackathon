@@ -2,15 +2,6 @@
 
 A firmware-to-dashboard pipeline that reads a 13-DOF sensor stack from a microcontroller, streams the raw readings over serial as a packed binary struct, decodes them in Python, persists them to PostgreSQL, and visualizes them live in Grafana.
 
-```
-┌──────────────────┐   binary struct    ┌────────────────┐   INSERT    ┌──────────────┐   SQL query   ┌─────────┐
-│  Microcontroller  │ ─── over USB ────► │  Python         │ ─────────► │  PostgreSQL   │ ─────────────►│ Grafana │
-│  (PlatformIO)     │    Serial @9600    │  Receiver        │            │  (sensor_     │  (auto-refresh)│         │
-│  BMI088 + BMM150  │                    │                  │            │   telemetry)  │               │         │
-│  + BME680         │                    │                  │            │               │               │         │
-└──────────────────┘                    └────────────────┘            └──────────────┘               └─────────┘
-```
-
 ## How it works
 
 1. **Firmware** (`Microcontroller/`) reads the accelerometer, gyroscope, magnetometer, and environmental sensor, packs every reading into a single fixed-layout `struct`, and writes it raw over serial, prefixed with a `##` header.
