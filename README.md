@@ -11,7 +11,7 @@ A firmware-to-dashboard pipeline that reads a 13-DOF sensor stack from a microco
 
 ## Hardware & sensors
 
-The firmware targets an **Arduino Zero** (SAMD21, `atmelsam` / `zero` in `platformio.ini`) and drives three I2C sensors combined into a single custom `B13DOF` library:
+The firmware targets an **Arduino Zero**  and drives three I2C sensors combined into a single custom `B13DOF` library:
 
 | Sensor | Measures | Library |
 |---|---|---|
@@ -19,30 +19,6 @@ The firmware targets an **Arduino Zero** (SAMD21, `atmelsam` / `zero` in `platfo
 | Bosch BME680 | External temperature, humidity, pressure, gas resistance | `adafruit/Adafruit BME680 Library` |
 | Bosch BMM150 | Magnetic field (3-axis) | `DFRobot/DFRobot_BMM150` |
 
-> If you're porting this to an ESP32 or another board, only `platformio.ini` (`[env:...]`, `platform`, `board`) and the I2C wiring need to change — the sensor and serialization code is board-agnostic.
-
-## Wire protocol
-
-Every reading is sent as one packed, little-endian C struct (`environment`, in `B13DOF.h`):
-
-```cpp
-struct __attribute__((__packed__)) environment {
-    float    ax, ay, az;   // Accelerometer (m/s²)
-    float    gx, gy, gz;   // Gyroscope (rad/s)
-    float    tempI;        // BMI088 internal temperature (°C)
-    uint64_t time;         // Sensor timestamp (ps)
-    float    tempO;        // BME680 external temperature (°C)
-    float    humidity;     // BME680 humidity (%)
-    float    pressure;     // BME680 pressure (hPa)
-    uint32_t Gas;           // BME680 gas resistance (KΩ)
-    int16_t  mx, my, mz;   // BMM150 magnetic field (µT)
-};
-```
-
-Each frame on the wire looks like:
-
-```
-[ '#' ] [ '#' ] [ 58 bytes of packed struct data ] [ '\n' ]
 ```
 
 - `Serializer::serialSend()` writes the `##` header, then the struct byte-by-byte via `reinterpret_cast<uint8_t*>`.
